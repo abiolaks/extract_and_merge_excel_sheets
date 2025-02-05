@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import glob
+import shutil
 
 # Define the base directory containing the Excel files
 base_dir = "../data/reports/"
@@ -37,7 +38,7 @@ for excel_file in excel_files:
         for col in merged_df.columns:
             if merged_df[col].dtype == 'object':  # Convert object columns to string
                 merged_df[col] = merged_df[col].astype(str)
-            elif pd.api.types.is_categorical_dtype(merged_df[col]):  # Convert categorical to string
+            elif isinstance(merged_df[col].dtype, pd.CategoricalDtype):  # Convert categorical to string
                 merged_df[col] = merged_df[col].astype(str)
             elif pd.api.types.is_bool_dtype(merged_df[col]):  # Ensure boolean type
                 merged_df[col] = merged_df[col].astype(bool)
@@ -59,3 +60,10 @@ for excel_file in excel_files:
             print(f"Error saving Parquet file {parquet_path}: {e}\n")
     else:
         print(f"No valid data found in sheets for {excel_file}\n")
+
+# Compress the merged_2023 folder into a ZIP file
+zip_filename = os.path.join(base_dir, "merged_2023.zip")
+# The base_name for make_archive should not include the extension.
+base_name = os.path.splitext(zip_filename)[0]
+shutil.make_archive(base_name=base_name, format='zip', root_dir=merged_folder)
+print(f"Compressed folder saved as: {zip_filename}")
